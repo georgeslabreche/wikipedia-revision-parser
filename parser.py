@@ -10,7 +10,7 @@ rvcontinue = ''
 # connect to default local instance of mongo
 client = MongoClient()
 
-# get database
+# get database and collection
 revisions_db = client.revisions
 kosovo_collection = revisions_db.kosovo
 
