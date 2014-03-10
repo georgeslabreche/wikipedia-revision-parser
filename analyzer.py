@@ -19,8 +19,22 @@ print entry_title
 for rev_day in collection.find({'title':entry_title}).distinct('date'):
 	rev_count = collection.find({'title':entry_title, 'date':rev_day}).count()
 	
-	ls = [rev_day, str(rev_count)]
+	# get sum of revision sizes
+	revisions_size_sum_pipe = [
+		{ '$match' : { 'title' : entry_title, 'date': rev_day} },
+		{ '$group' :
+			{
+				'_id' : '$date',
+				'revisionSizePerDate' : { '$sum' : '$size' }
+			}
+		}
+	]
+	
+	rev_size_sum_result = db.revisions.aggregate(pipeline=revisions_size_sum_pipe)
+	day_rev_sum = rev_size_sum_result['result'][0]['revisionSizePerDate']
+	
+	ls = [rev_day, str(rev_count), day_rev_sum]
 	
 	writer.writerow(ls)
-	print rev_day + ": " + str(rev_count)
+	print rev_day + " - " + str(rev_count) +  " - "  + str(day_rev_sum)
 	
