@@ -15,7 +15,7 @@ csv_filename = entry_title + '-number-of-revisions-per-user.csv'
 csv_file = open(csv_filename, 'wb')
 writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
-header_ls = ['Date', 'Number of Revisions', "Total Size of Revisions"]
+header_ls = ['Username', 'Number of Revisions', "Total Size of Revisions"]
 writer.writerow(header_ls)
 
 print entry_title
