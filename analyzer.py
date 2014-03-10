@@ -15,6 +15,9 @@ csv_filename = entry_title + '-revisions-per-day-count.csv'
 csv_file = open(csv_filename, 'wb')
 writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_NONE)
 
+header_ls = ['Date', 'Number of Revisions', 'Total Size of Revisions']
+writer.writerow(header_ls)
+
 print entry_title
 for rev_day in collection.find({'title':entry_title}).distinct('date'):
 	rev_count = collection.find({'title':entry_title, 'date':rev_day}).count()
