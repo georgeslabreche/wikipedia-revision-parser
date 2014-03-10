@@ -1,8 +1,12 @@
+import sys
 import urllib
+from datetime import datetime
 from xml.dom import minidom
 from pymongo import MongoClient
 
-WP_KOSOVO_REVISIONS_API_URL = 'http://en.wikipedia.org/w/api.php?action=query&titles=Kosovo&prop=revisions&rvlimit=500&format=xml'
+entry_title = sys.argv[1]
+wp_api_rev_url = 'http://en.wikipedia.org/w/api.php?action=query&titles=' + entry_title + '&prop=revisions&rvlimit=500&rvdir=newer&rvprop=ids|flags|user|userid|size|timestamp|comment&format=xml'
+
 
 more_revisions_left = True
 rvcontinue = ''
@@ -11,14 +15,14 @@ rvcontinue = ''
 client = MongoClient()
 
 # get database and collection
-revisions_db = client.revisions
-kosovo_collection = revisions_db.kosovo
+db = client.revisions
+collection = db.revisions
 
 while more_revisions_left:
 	if not rvcontinue:
-		revisions_xml_url = WP_KOSOVO_REVISIONS_API_URL
+		revisions_xml_url = wp_api_rev_url
 	else:
-		revisions_xml_url = WP_KOSOVO_REVISIONS_API_URL + '&rvstartid=' + rvcontinue
+		revisions_xml_url = wp_api_rev_url + '&rvstartid=' + rvcontinue
 	
 	print revisions_xml_url
 
@@ -26,13 +30,25 @@ while more_revisions_left:
 	revisions = xmldoc.getElementsByTagName('rev') 
 
 	for rev in revisions:
-		timestamp = rev.attributes['timestamp'].value
-		revid = rev.attributes['revid'].value
-		date_str = timestamp[:10]
+		revid = int(rev.attributes['revid'].value)
+		parentid = int(rev.attributes['parentid'].value)
 		
-		revision_post = {"revid":revid, "date":date_str, "timestamp":timestamp}
+		if rev.hasAttribute('user'):
+			user = rev.attributes['user'].value
+			userid = int(rev.attributes['userid'].value)
+		else:
+			user = -1
+			userid = -1
 		
-		post_id = kosovo_collection.insert(revision_post)
+		revision_size = int(rev.attributes['size'].value)
+
+		timestamp_str = rev.attributes['timestamp'].value
+		timestamp = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%SZ')
+		date_str = timestamp_str[:10]
+		
+		revision_post = {"title":entry_title, "revid":revid, "parentid":parentid, "user":user, "userid":userid, "size":revision_size, "date":date_str, "timestamp":timestamp}
+		
+		post_id = collection.insert(revision_post)
 		
 		print revision_post
 
