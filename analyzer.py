@@ -11,7 +11,7 @@ client = MongoClient()
 db = client.revisions
 collection = db.revisions
 
-csv_filename = entry_title + '-revisions-per-day-count.csv'
+csv_filename = 'output/' + entry_title + '-revisions-per-day-count.csv'
 csv_file = open(csv_filename, 'wb')
 writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_NONE)
 
